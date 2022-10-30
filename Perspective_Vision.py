@@ -3,6 +3,7 @@ import numpy as np
 import math
 import time
 
+
 class Camera:
     def __init__(self, focal_distance, image_size, center, camera_position, camera_rotation_matrices):
         self.focal = focal_distance
@@ -51,40 +52,39 @@ class CameraGUI:
     def __init__(self, camera_object, gui_name):
         self.gui_name = gui_name
         self.camera = camera_object
-        self.x = 1
-        self.y = 1
-        self.z = 1
-        self.x_angle_switch = 1
-        self.y_angle_switch = 1
-        self.z_angle_switch = 1
         cv2.namedWindow(gui_name)
-        cv2.createTrackbar("Camera X: " + gui_name, gui_name, 0, 100, self.update_camera_x)
-        cv2.createTrackbar("Camera Y: " + gui_name, gui_name, 0, 100, self.update_camera_y)
-        cv2.createTrackbar("Camera Z: " + gui_name, gui_name, 0, 100, self.update_camera_z)
-        cv2.createTrackbar("Camera X_angle: " + gui_name, gui_name, 0, 89, self.update_camera_x_angle)
-        cv2.createTrackbar("Camera Y_angle: " + gui_name, gui_name, 0, 89, self.update_camera_y_angle)
-        cv2.createTrackbar("Camera Z_angle: " + gui_name, gui_name, 0, 89, self.update_camera_z_angle)
-        cv2.createTrackbar("Camera X negative: " + gui_name, gui_name, 0, 1, self.update_camera_x_negative)
-        cv2.createTrackbar("Camera Y negative: " + gui_name, gui_name, 0, 1, self.update_camera_y_negative)
-        cv2.createTrackbar("Camera Z negative", gui_name, 0, 1, self.update_camera_z_negative)
-        cv2.createTrackbar("Camera X_angle negative: " + gui_name, gui_name, 0, 1, self.update_camera_x_angle_negative)
-        cv2.createTrackbar("Camera Y_angle negative: " + gui_name, gui_name, 0, 1, self.update_camera_y_angle_negative)
-        cv2.createTrackbar("Camera Z_angle negative: " + gui_name, gui_name, 0, 1, self.update_camera_z_angle_negative)
+        cv2.createTrackbar("Cam X:", gui_name, 0, 100, self.update_camera_x)
+        cv2.setTrackbarMin('Cam X:', gui_name, -100)
+        cv2.createTrackbar("Cam Y:", gui_name, 0, 100, self.update_camera_y)
+        cv2.setTrackbarMin('Cam Y:', gui_name, -100)
+        cv2.createTrackbar("Cam Z:", gui_name, 40, 100, self.update_camera_z)
+        cv2.createTrackbar("Cam Pitch:", gui_name, 0, 89, self.update_camera_x_angle)
+        cv2.setTrackbarMin('Cam Pitch:', gui_name, -89)
+        cv2.createTrackbar("Cam Yaw:", gui_name, 0, 89, self.update_camera_y_angle)
+        cv2.setTrackbarMin('Cam Yaw:', gui_name, -89)
+        cv2.createTrackbar("Cam Roll:", gui_name, 0, 89, self.update_camera_z_angle)
+        cv2.setTrackbarMin('Cam Roll:', gui_name, -89)
+        # cv2.createTrackbar("Camera X negative: ", gui_name, 0, 1, self.update_camera_x_negative)
+        # cv2.createTrackbar("Camera Y negative: ", gui_name, 0, 1, self.update_camera_y_negative)
+        # cv2.createTrackbar("Camera Z negative ", gui_name, 0, 1, self.update_camera_z_negative)
+        # cv2.createTrackbar("Camera X_angle negative: ", gui_name, 0, 1, self.update_camera_x_angle_negative)
+        # cv2.createTrackbar("Camera Y_angle negative: ", gui_name, 0, 1, self.update_camera_y_angle_negative)
+        # cv2.createTrackbar("Camera Z_angle negative: ", gui_name, 0, 1, self.update_camera_z_angle_negative)
 
     def update_extrinsic_matrix(self):
         self.camera.extrinsic_matrix = np.concatenate([self.camera.camera_rotation_matrix, self.camera.camera_pos],
                                                       axis=1)
 
     def update_camera_x(self, val):
-        self.camera.camera_pos[0][0] = self.x * val
+        self.camera.camera_pos[0][0] = val
         self.update_extrinsic_matrix()
 
     def update_camera_y(self, val):
-        self.camera.camera_pos[1][0] = self.y * val
+        self.camera.camera_pos[1][0] = val
         self.update_extrinsic_matrix()
 
     def update_camera_z(self, val):
-        self.camera.camera_pos[2][0] = self.z * val
+        self.camera.camera_pos[2][0] = val
         self.update_extrinsic_matrix()
 
     def update_rotation_matrix(self):
@@ -94,49 +94,25 @@ class CameraGUI:
         self.update_extrinsic_matrix()
 
     def update_camera_x_angle(self, val):
-        radians = math.radians(self.x_angle_switch * val)
+        radians = math.radians(val)
         self.camera.camera_rotations[0] = np.array([[1, 0, 0],
                                                     [0, math.cos(radians), -math.sin(radians)],
                                                     [0, math.sin(radians), math.cos(radians)]])
         self.update_rotation_matrix()
 
     def update_camera_y_angle(self, val):
-        radians = math.radians(self.y_angle_switch * val)
+        radians = math.radians(val)
         self.camera.camera_rotations[1] = np.array([[math.cos(radians), 0, math.sin(radians)],
                                                     [0, 1, 0],
                                                     [-math.sin(radians), 0, math.cos(radians)]])
         self.update_rotation_matrix()
 
     def update_camera_z_angle(self, val):
-        radians = math.radians(self.z_angle_switch * val)
+        radians = math.radians(val)
         self.camera.camera_rotations[2] = np.array([[math.cos(radians), -math.sin(radians), 0],
                                                     [math.sin(radians), math.cos(radians), 0],
                                                     [0, 0, 1]])
         self.update_rotation_matrix()
-
-    @staticmethod
-    def switch(val):
-        if val:
-            return 1
-        return -1
-
-    def update_camera_x_negative(self, val):
-        self.x = self.switch(val)
-
-    def update_camera_y_negative(self, val):
-        self.y = self.switch(val)
-
-    def update_camera_z_negative(self, val):
-        self.z = self.switch(val)
-
-    def update_camera_x_angle_negative(self, val):
-        self.x_angle_switch = self.switch(val)
-
-    def update_camera_y_angle_negative(self, val):
-        self.y_angle_switch = self.switch(val)
-
-    def update_camera_z_angle_negative(self, val):
-        self.z_angle_switch = self.switch(val)
 
     @staticmethod
     def draw(img_size, input_points, *guis):
@@ -164,7 +140,7 @@ class CameraGUI:
             transformed_points = np.array([[[i[0][0]], [i[1][0]], [1]] for i in transformed_points])
             t, r, _ = vo.compute_pose(transformed_points)
             if time.time() - start > 2:
-                print("Homography: " +"\n" + str(vo.H))
+                print("Homography: " + "\n" + str(vo.H))
                 print("Rotation: " + "\n" + str(r))
                 print("Translation:" + "\n" + str(t.reshape(1, 3)))
                 start = time.time()
@@ -298,21 +274,21 @@ def rotationMatrixToEulerAngles(R):
     return np.array([math.degrees(x), math.degrees(y), math.degrees(z)])
 
 
-camera_pos = np.array([[0, 0, -100]]).T
-rotation_x = np.array([[1, 0, 0],
-                       [0, 1, 0],
-                       [0, 0, 1]])
-rotation_y = rotation_x
-rotation_z = rotation_x
-size = (400, 400)
-cx = 200
-cy = 200
-f = 60
-points = Cube.generate_points([0, 0, 0], 70)
-camera = Camera(f, size, (cx, cy), camera_pos, [rotation_x, rotation_y, rotation_z])
-gui = CameraGUI(camera, 'camera_gui')
-CameraGUI.draw((480, 640), points, gui)
-
+if __name__ == '__main__':
+    camera_pos = np.array([[0, 0, -100]]).T
+    rotation_x = np.array([[1, 0, 0],
+                           [0, 1, 0],
+                           [0, 0, 1]])
+    rotation_y = rotation_x
+    rotation_z = rotation_x
+    size = (400, 400)
+    cx = 200
+    cy = 200
+    f = 60
+    points = Cube.generate_points([0, 0, 0], 70)
+    camera = Camera(f, size, (cx, cy), camera_pos, [rotation_x, rotation_y, rotation_z])
+    gui = CameraGUI(camera, 'camera_gui')
+    CameraGUI.draw((400, 1000), points, gui)
 
 '''
 camera_pos = np.array([[0, 0, -40]]).T
@@ -342,7 +318,6 @@ R = np.array([[0.986389, 0.159555, 0.0397377],
               [-0.14876, 0.968901, -0.197743],
               [-0.0700528, 0.18914, 0.979448]])
 '''
-
 
 '''
 R = np.array([[1.0000000, 0.0000000, 0.0000000],
